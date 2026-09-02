@@ -28,7 +28,7 @@ export const TIER_CONFIG = {
   },
   regular: {
     label: 'General Admission',
-    price: 230,
+    price: 249,
     maxSlots: 40,
     badge: 'Standard Pass',
     description: 'Full pass to 3 hours of curated games, conversations & laughs.',

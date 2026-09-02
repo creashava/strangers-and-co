@@ -88,7 +88,7 @@ export default function TierCard({
           </span>
           {isEarlyBird && (
             <span className="ml-auto text-xs font-bold text-[#EA580C] bg-orange-100/80 px-2.5 py-1 rounded-lg">
-              Save ₹31
+              Save ₹50
             </span>
           )}
         </div>
@@ -150,7 +150,7 @@ export default function TierCard({
             'Sold Out'
           ) : (
             <>
-              <span>Book {isEarlyBird ? 'Early Bird (₹199)' : 'General Pass (₹230)'}</span>
+              <span>Book {isEarlyBird ? 'Early Bird (₹199)' : 'General Pass (₹249)'}</span>
               <ArrowRight size={16} />
             </>
           )}

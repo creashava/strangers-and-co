@@ -71,7 +71,7 @@ export default function HomePage() {
         const params = new URLSearchParams({
           id: result.reservation_id,
           tier: result.tier_assigned || tier,
-          amount: String(result.amount || (tier === 'early_bird' ? 199 : 230)),
+          amount: String(result.amount || (tier === 'early_bird' ? 199 : 249)),
         });
         router.push(`/register?${params.toString()}`);
       } else {

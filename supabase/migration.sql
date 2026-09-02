@@ -108,8 +108,8 @@ BEGIN
 
             -- Auto-fallback to regular tier
             RETURN QUERY SELECT
-                FALSE, NULL::UUID, (10 - v_active_count)::INT, 'regular'::ticket_tier, 230.00::NUMERIC(6,2),
-                'Early bird slots are filled. Regular tickets at ₹230 are still available.'::TEXT;
+                FALSE, NULL::UUID, (10 - v_active_count)::INT, 'regular'::ticket_tier, 249.00::NUMERIC(6,2),
+                'Early bird slots are filled. Regular tickets at ₹249 are still available.'::TEXT;
             RETURN;
         END IF;
 
@@ -131,7 +131,7 @@ BEGIN
         END IF;
 
         v_tier := 'regular';
-        v_amount := 230.00;
+        v_amount := 249.00;
         v_slots_left := 40 - (v_total_active + 1);
     END IF;
 
