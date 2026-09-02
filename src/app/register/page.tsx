@@ -8,7 +8,7 @@ import RegistrationForm from '@/components/RegistrationForm';
 import { useRegistrationStore } from '@/store/useRegistration';
 import { RESERVATION_TIMEOUT_SECONDS, TIER_CONFIG, EVENT_NAME } from '@/lib/constants';
 import type { TicketTier, RegistrationFormData, CompleteRegistrationResult } from '@/lib/types';
-import { ArrowLeft, ShieldCheck, Clock, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ShieldCheck, Clock, Check } from 'lucide-react';
 
 function RegisterContent() {
   const searchParams = useSearchParams();
@@ -176,14 +176,18 @@ function RegisterContent() {
           {step === 'payment' ? (
             <div>
               <UpiPayment tier={tier} amount={amount} reservationId={reservationId} />
-              <div className="mt-6 pt-4 border-t border-stone-100 text-center">
+              <div className="mt-6 pt-5 border-t border-stone-200">
                 <button
                   type="button"
                   onClick={() => setStep('form')}
-                  className="text-xs font-extrabold text-[#15803D] hover:text-[#166534] transition-colors inline-flex items-center gap-1"
+                  className="w-full py-4 px-6 rounded-2xl bg-stone-900 hover:bg-black text-white font-extrabold text-base tracking-wide shadow-lg shadow-stone-900/10 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 cursor-pointer group"
                 >
-                  Already paid via UPI? Enter UTR number &rarr;
+                  <span>Enter UTR &amp; Details</span>
+                  <ArrowRight size={18} className="transition-transform group-hover:translate-x-1 text-emerald-400" />
                 </button>
+                <p className="text-xs text-stone-500 text-center mt-2.5 font-medium">
+                  Already completed payment? Tap the button above to enter your UTR number
+                </p>
               </div>
             </div>
           ) : (

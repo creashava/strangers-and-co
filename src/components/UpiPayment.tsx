@@ -162,7 +162,7 @@ export default function UpiPayment({ tier, amount, reservationId }: UpiPaymentPr
           <div>
             <p className="font-bold">Instructions:</p>
             <p className="mt-0.5 text-stone-600">
-              Scan the QR code above or tap the button to pay ₹{amount}. After paying, enter your <strong>12-digit UTR / UPI Ref ID</strong> below to confirm your ticket.
+              Scan the QR code above or tap the button to pay ₹{amount}. After paying, tap the <strong>Enter UTR &amp; Details</strong> button below to confirm your ticket.
             </p>
           </div>
         </div>
