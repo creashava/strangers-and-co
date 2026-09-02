@@ -14,6 +14,7 @@ import {
   EVENT_TAGLINE,
   EVENT_MOTTO,
   EVENT_PROMPT,
+  TIER_CONFIG,
 } from '@/lib/constants';
 import {
   Clock,
@@ -68,10 +69,12 @@ export default function HomePage() {
       const result: ReservationResult = await res.json();
 
       if (result.success && result.reservation_id) {
+        const assignedTier = result.tier_assigned || tier;
+        const passAmount = TIER_CONFIG[assignedTier]?.price || (assignedTier === 'early_bird' ? 199 : 229);
         const params = new URLSearchParams({
           id: result.reservation_id,
-          tier: result.tier_assigned || tier,
-          amount: String(result.amount || (tier === 'early_bird' ? 199 : 249)),
+          tier: assignedTier,
+          amount: String(passAmount),
         });
         router.push(`/register?${params.toString()}`);
       } else {

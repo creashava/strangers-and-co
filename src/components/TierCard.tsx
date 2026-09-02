@@ -3,6 +3,7 @@
 import { TIER_CONFIG } from '@/lib/constants';
 import type { TicketTier } from '@/lib/types';
 import { Sparkles, Check, Flame, ArrowRight, ShieldCheck } from 'lucide-react';
+import ScratchCard from '@/components/ScratchCard';
 
 interface TierCardProps {
   tier: TicketTier;
@@ -65,7 +66,7 @@ export default function TierCard({
                   : 'bg-stone-400'
               }`}
             />
-            {isAvailable ? (isEarlyBird ? 'Offer Active' : 'Open') : 'Sold Out'}
+            {isAvailable ? (isEarlyBird ? 'Offer Active' : 'Offer Active') : 'Sold Out'}
           </span>
         </div>
 
@@ -73,25 +74,56 @@ export default function TierCard({
         <h3 className="text-2xl font-extrabold text-[#1C1917] tracking-tight mb-2">
           {config.label}
         </h3>
-        <p className="text-sm text-[#78716C] leading-relaxed mb-6 font-normal">
+        <p className="text-sm text-[#78716C] leading-relaxed mb-5 font-normal">
           {config.description}
         </p>
 
-        {/* Price Tag */}
-        <div className="flex items-baseline gap-2 mb-6 pb-6 border-b border-stone-200/80">
-          <span className="text-lg font-bold text-stone-400">₹</span>
-          <span className="text-5xl font-black text-[#0F172A] tracking-tight">
-            {config.price}
-          </span>
-          <span className="text-xs font-medium text-stone-500 ml-1 uppercase tracking-wider">
-            / person
-          </span>
-          {isEarlyBird && (
-            <span className="ml-auto text-xs font-bold text-[#EA580C] bg-orange-100/80 px-2.5 py-1 rounded-lg">
-              Save ₹50
-            </span>
+        {/* Price Tag with Scratch Offer Display */}
+        <div className="flex items-baseline gap-2 mb-4 pb-4 border-b border-stone-200/80">
+          {isEarlyBird ? (
+            <>
+              <span className="text-lg font-bold text-stone-400 line-through decoration-rose-500/70 mr-1">
+                ₹249
+              </span>
+              <span className="text-lg font-bold text-stone-400">₹</span>
+              <span className="text-5xl font-black text-[#0F172A] tracking-tight">
+                {config.price}
+              </span>
+              <span className="text-xs font-medium text-stone-500 ml-1 uppercase tracking-wider">
+                / person
+              </span>
+              <span className="ml-auto text-xs font-bold text-[#EA580C] bg-orange-100/80 px-2.5 py-1 rounded-lg">
+                Save ₹50
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="text-xl font-bold text-stone-400 line-through decoration-rose-500 decoration-2 mr-1">
+                ₹249
+              </span>
+              <span className="text-lg font-bold text-stone-400">₹</span>
+              <span className="text-5xl font-black text-[#0F172A] tracking-tight">
+                {config.price}
+              </span>
+              <span className="text-xs font-medium text-stone-500 ml-1 uppercase tracking-wider">
+                / person
+              </span>
+              <span className="ml-auto text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-lg">
+                Save ₹20
+              </span>
+            </>
           )}
         </div>
+
+        {/* Interactive Scratch Card on Regular Pass */}
+        {!isEarlyBird && (
+          <div className="mb-6">
+            <ScratchCard
+              originalPrice={249}
+              discountedPrice={229}
+            />
+          </div>
+        )}
 
         {/* Value Highlights */}
         <ul className="space-y-3 mb-8 text-sm text-[#44403C]">
@@ -150,7 +182,7 @@ export default function TierCard({
             'Sold Out'
           ) : (
             <>
-              <span>Book {isEarlyBird ? 'Early Bird (₹199)' : 'General Pass (₹249)'}</span>
+              <span>Book {isEarlyBird ? 'Early Bird (₹199)' : 'General Pass (₹229)'}</span>
               <ArrowRight size={16} />
             </>
           )}

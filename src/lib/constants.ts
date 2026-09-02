@@ -11,10 +11,14 @@ export const EVENT_TAGLINE = 'fun & laugh & games';
 export const EVENT_MOTTO = 'MEET. MINGLE. MAKE FRIENDS.';
 export const EVENT_PROMPT = 'Ready to meet strangers?';
 
+export const GOOGLE_FORM_URL =
+  'https://docs.google.com/forms/d/e/1FAIpQLSfHMwtGC-uE8JCgPeaBEEyP311sdgrEBHWxl7QoSEqkHYm-Ug/viewform?usp=header';
+
 export const TIER_CONFIG = {
   early_bird: {
     label: 'Early Bird Pass',
     price: 199,
+    originalPrice: 249,
     maxSlots: 10,
     badge: 'Special Offer',
     description: 'Grab the discounted early bird pass before it is claimed.',
@@ -28,9 +32,10 @@ export const TIER_CONFIG = {
   },
   regular: {
     label: 'General Admission',
-    price: 249,
+    price: 229,
+    originalPrice: 249,
     maxSlots: 40,
-    badge: 'Standard Pass',
+    badge: 'Special Offer',
     description: 'Full pass to 3 hours of curated games, conversations & laughs.',
     theme: {
       bg: 'bg-[#F0FDF4]',
