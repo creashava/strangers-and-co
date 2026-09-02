@@ -49,9 +49,7 @@ function RegisterContent() {
         formData.append('email', data.email);
         formData.append('phone', data.phone);
         formData.append('utr_number', data.utr_number);
-        if (data.screenshot) {
-          formData.append('screenshot', data.screenshot);
-        }
+        formData.append('screenshot', data.screenshot);
 
         const res = await fetch('/api/register', {
           method: 'POST',

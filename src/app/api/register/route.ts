@@ -29,28 +29,32 @@ export async function POST(request: Request) {
     if (!UTR_REGEX.test(utrNumber)) {
       return NextResponse.json({ success: false, message: 'UTR / UPI Reference ID must be exactly 12 digits' }, { status: 400 });
     }
+    if (!screenshot || !(screenshot instanceof Blob) || screenshot.size === 0) {
+      return NextResponse.json({ success: false, message: 'Payment screenshot is required' }, { status: 400 });
+    }
 
     const supabase = createServerClient();
-    let screenshotUrl: string | null = null;
 
-    // Upload screenshot if provided
-    if (screenshot && screenshot.size > 0) {
-      const fileExt = screenshot.name.split('.').pop() || 'png';
-      const fileName = `${reservationId}-${Date.now()}.${fileExt}`;
+    // Upload mandatory screenshot
+    const fileExt = (screenshot instanceof File && screenshot.name ? screenshot.name.split('.').pop() : 'png') || 'png';
+    const fileName = `${reservationId}-${Date.now()}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('receipts')
-        .upload(fileName, screenshot, {
-          contentType: screenshot.type || 'image/png',
-          upsert: true,
-        });
+    const { error: uploadError } = await supabase.storage
+      .from('receipts')
+      .upload(fileName, screenshot, {
+        contentType: screenshot.type || 'image/png',
+        upsert: true,
+      });
 
-      if (uploadError) {
-        console.error('Screenshot upload error:', uploadError);
-      } else {
-        screenshotUrl = fileName;
-      }
+    if (uploadError) {
+      console.error('Screenshot upload error:', uploadError);
+      return NextResponse.json(
+        { success: false, message: 'Failed to upload screenshot. Please try again.' },
+        { status: 500 }
+      );
     }
+
+    const screenshotUrl = fileName;
 
     // Complete registration via RPC
     const { data, error } = await supabase.rpc('complete_registration', {

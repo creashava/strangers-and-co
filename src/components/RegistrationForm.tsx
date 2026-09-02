@@ -41,13 +41,17 @@ export default function RegistrationForm({ onSubmit, isSubmitting }: Registratio
       newErrors.utr_number = 'UTR must be exactly 12 digits (numeric)';
     }
 
+    if (!screenshot) {
+      newErrors.screenshot = 'Please upload your payment screenshot';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate() || !screenshot) return;
 
     await onSubmit({
       ...formData,
@@ -184,7 +188,7 @@ export default function RegistrationForm({ onSubmit, isSubmitting }: Registratio
       {/* Screenshot upload */}
       <div>
         <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1.5 ml-1">
-          Payment Screenshot <span className="font-normal text-stone-400">(optional)</span>
+          Payment Screenshot <span className="text-rose-500">*</span>
         </label>
         <input
           ref={fileInputRef}
@@ -197,23 +201,30 @@ export default function RegistrationForm({ onSubmit, isSubmitting }: Registratio
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-2xl border-2 border-dashed transition-all ${
+          className={`w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-2xl border-2 border-dashed transition-all cursor-pointer ${
             screenshotPreview
               ? 'border-emerald-500/60 bg-emerald-50/50'
+              : errors.screenshot
+              ? 'border-rose-400 bg-rose-50/40 ring-1 ring-rose-200'
               : 'border-stone-300 bg-stone-50/50 hover:bg-stone-100/60 hover:border-stone-400'
           }`}
           disabled={isSubmitting}
         >
           {screenshotPreview ? (
-            <div className="flex items-center gap-2 text-xs font-bold text-emerald-800">
-              <CheckCircle2 size={16} className="text-emerald-600" />
-              <span>Screenshot Attached</span>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 truncate">
+                <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                <span className="truncate">{screenshot?.name || 'Screenshot Attached'}</span>
+              </div>
+              <span className="text-[11px] font-semibold text-emerald-700 underline shrink-0 ml-2">
+                Change
+              </span>
             </div>
           ) : (
             <>
-              <Upload size={16} className="text-stone-400" />
-              <span className="text-xs font-medium text-stone-600">
-                Upload payment screenshot (optional)
+              <Upload size={16} className={errors.screenshot ? 'text-rose-400' : 'text-stone-400'} />
+              <span className={`text-xs font-medium ${errors.screenshot ? 'text-rose-600 font-semibold' : 'text-stone-600'}`}>
+                Upload payment screenshot
               </span>
             </>
           )}

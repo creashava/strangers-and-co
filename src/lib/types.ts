@@ -43,7 +43,7 @@ export interface RegistrationFormData {
   email: string;
   phone: string;
   utr_number: string;
-  screenshot?: File | null;
+  screenshot: File;
 }
 
 export interface CompleteRegistrationResult {
