@@ -3,7 +3,7 @@
 import { QRCodeSVG } from 'qrcode.react';
 import { buildUpiUri, TIER_CONFIG, UPI_ID, PAYEE_NAME } from '@/lib/constants';
 import type { TicketTier } from '@/lib/types';
-import { Smartphone, QrCode, Copy, Check, Info } from 'lucide-react';
+import { Copy, Check, Info } from 'lucide-react';
 import { useState } from 'react';
 
 interface UpiPaymentProps {
@@ -140,21 +140,6 @@ export default function UpiPayment({ tier, amount, reservationId }: UpiPaymentPr
         </div>
       </div>
 
-      {/* 1-Tap Mobile Intent Link */}
-      <div className="mt-3">
-        <a
-          href={upiUri}
-          className={`w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl font-bold text-sm text-white shadow-sm transition-all active:scale-[0.98] ${
-            isEarlyBird
-              ? 'bg-[#EA580C] hover:bg-[#C2410C] shadow-orange-200'
-              : 'bg-[#15803D] hover:bg-[#166534] shadow-emerald-200'
-          }`}
-        >
-          <Smartphone size={17} />
-          <span>Pay via UPI App (₹{amount})</span>
-        </a>
-      </div>
-
       {/* Helper notice */}
       <div className="mt-3 p-3 rounded-2xl bg-amber-50 border border-amber-200/90 text-[11px] text-amber-900">
         <div className="flex items-start gap-2">
@@ -162,7 +147,7 @@ export default function UpiPayment({ tier, amount, reservationId }: UpiPaymentPr
           <div>
             <p className="font-bold">Instructions:</p>
             <p className="mt-0.5 text-stone-600">
-              Scan the QR code above or tap the button to pay ₹{amount}. After paying, tap the <strong>Enter UTR &amp; Details</strong> button below to confirm your ticket.
+              Scan the QR code above or copy the UPI ID to pay ₹{amount}. After paying, tap the <strong>Enter UTR &amp; Details</strong> button below to confirm your ticket.
             </p>
           </div>
         </div>
