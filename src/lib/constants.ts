@@ -52,16 +52,18 @@ export const UTR_REGEX = /^[0-9]{12}$/;
 export const PHONE_REGEX = /^[6-9]\d{9}$/;
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const UPI_ID = process.env.NEXT_PUBLIC_UPI_ID || 'merchant@upi';
-export const PAYEE_NAME = process.env.NEXT_PUBLIC_PAYEE_NAME || 'Taranga - Strangers & Co';
+export const UPI_ID = process.env.NEXT_PUBLIC_UPI_ID || '7411198298-2@ibl';
+export const PAYEE_NAME = process.env.NEXT_PUBLIC_PAYEE_NAME || 'DIVYA';
+export const UPI_PHONE = '7411198298';
 
-export function buildUpiUri(amount: number, reservationId: string): string {
+export function buildUpiUri(amount: number, reservationId?: string): string {
   const params = new URLSearchParams({
     pa: UPI_ID,
     pn: PAYEE_NAME,
     am: amount.toString(),
     cu: 'INR',
-    tn: `STRANGERS_CO_${reservationId.slice(0, 8).toUpperCase()}`,
+    mode: '02',
+    purpose: '00',
   });
   return `upi://pay?${params.toString()}`;
 }
