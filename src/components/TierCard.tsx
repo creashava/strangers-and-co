@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { TIER_CONFIG } from '@/lib/constants';
 import type { TicketTier } from '@/lib/types';
 import { Sparkles, Check, Flame, ArrowRight, ShieldCheck } from 'lucide-react';
@@ -20,6 +21,7 @@ export default function TierCard({
   disabled = false,
   isLoading = false,
 }: TierCardProps) {
+  const [isScratched, setIsScratched] = useState(false);
   const config = TIER_CONFIG[tier];
   const isEarlyBird = tier === 'early_bird';
   const isDisabled = disabled || !isAvailable || isLoading;
@@ -102,14 +104,20 @@ export default function TierCard({
                 ₹249
               </span>
               <span className="text-lg font-bold text-stone-400">₹</span>
-              <span className="text-5xl font-black text-[#0F172A] tracking-tight">
+              <span className={`text-5xl font-black tracking-tight transition-colors ${
+                isScratched ? 'text-emerald-700' : 'text-[#0F172A]'
+              }`}>
                 {config.price}
               </span>
               <span className="text-xs font-medium text-stone-500 ml-1 uppercase tracking-wider">
                 / person
               </span>
-              <span className="ml-auto text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-lg">
-                Save ₹20
+              <span className={`ml-auto text-xs font-bold px-2.5 py-1 rounded-lg transition-all ${
+                isScratched
+                  ? 'text-emerald-800 bg-emerald-100 ring-2 ring-emerald-400/40 animate-pulse'
+                  : 'text-amber-800 bg-amber-100'
+              }`}>
+                {isScratched ? '🎉 Save ₹20' : 'Save ₹20 Offer'}
               </span>
             </>
           )}
@@ -121,6 +129,8 @@ export default function TierCard({
             <ScratchCard
               originalPrice={249}
               discountedPrice={229}
+              onReveal={() => setIsScratched(true)}
+              isRevealed={isScratched}
             />
           </div>
         )}
@@ -182,7 +192,13 @@ export default function TierCard({
             'Sold Out'
           ) : (
             <>
-              <span>Book {isEarlyBird ? 'Early Bird (₹199)' : 'General Pass (₹229)'}</span>
+              <span>
+                {isEarlyBird
+                  ? 'Book Early Bird (₹199)'
+                  : isScratched
+                  ? 'Book General Pass (₹229) • Offer Active'
+                  : 'Book General Pass (₹229)'}
+              </span>
               <ArrowRight size={16} />
             </>
           )}
