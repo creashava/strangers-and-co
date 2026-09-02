@@ -54,7 +54,6 @@ export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const UPI_ID = process.env.NEXT_PUBLIC_UPI_ID || '7411198298-2@ibl';
 export const PAYEE_NAME = process.env.NEXT_PUBLIC_PAYEE_NAME || 'DIVYA';
-export const UPI_PHONE = '7411198298';
 
 export function buildUpiUri(amount: number, reservationId?: string): string {
   const params = new URLSearchParams({

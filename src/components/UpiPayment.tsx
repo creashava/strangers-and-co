@@ -1,11 +1,10 @@
 'use client';
 
 import { QRCodeSVG } from 'qrcode.react';
-import { buildUpiUri, TIER_CONFIG, UPI_ID, PAYEE_NAME, UPI_PHONE } from '@/lib/constants';
+import { buildUpiUri, TIER_CONFIG, UPI_ID, PAYEE_NAME } from '@/lib/constants';
 import type { TicketTier } from '@/lib/types';
-import { Smartphone, QrCode, Copy, Check, Info, ShieldCheck } from 'lucide-react';
+import { Smartphone, QrCode, Copy, Check, Info } from 'lucide-react';
 import { useState } from 'react';
-import Image from 'next/image';
 
 interface UpiPaymentProps {
   tier: TicketTier;
@@ -14,17 +13,17 @@ interface UpiPaymentProps {
 }
 
 export default function UpiPayment({ tier, amount, reservationId }: UpiPaymentProps) {
-  const [copiedField, setCopiedField] = useState<'id' | 'phone' | null>(null);
+  const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'phonepe' | 'qr'>('phonepe');
   const upiUri = buildUpiUri(amount, reservationId);
   const config = TIER_CONFIG[tier];
   const isEarlyBird = tier === 'early_bird';
 
-  const handleCopy = async (text: string, field: 'id' | 'phone') => {
+  const handleCopyUpiId = async () => {
     try {
-      await navigator.clipboard.writeText(text);
-      setCopiedField(field);
-      setTimeout(() => setCopiedField(null), 2500);
+      await navigator.clipboard.writeText(UPI_ID);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
     } catch {
       // Fallback
     }
@@ -112,36 +111,8 @@ export default function UpiPayment({ tier, amount, reservationId }: UpiPaymentPr
         )}
       </div>
 
-      {/* Quick Pay / Copy Options */}
-      <div className="mt-4 space-y-2">
-        {/* Mobile Number Copy */}
-        <div className="flex items-center justify-between p-3 rounded-2xl bg-white border border-stone-200">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
-              PhonePe / GPay Number
-            </p>
-            <p className="text-sm font-mono font-bold text-stone-800">{UPI_PHONE}</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => handleCopy(UPI_PHONE, 'phone')}
-            className="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95"
-          >
-            {copiedField === 'phone' ? (
-              <>
-                <Check size={13} className="text-emerald-600" />
-                <span className="text-emerald-700">Copied</span>
-              </>
-            ) : (
-              <>
-                <Copy size={13} />
-                <span>Copy</span>
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* UPI ID Copy */}
+      {/* UPI ID Quick Copy */}
+      <div className="mt-4">
         <div className="flex items-center justify-between p-3 rounded-2xl bg-white border border-stone-200">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
@@ -151,10 +122,10 @@ export default function UpiPayment({ tier, amount, reservationId }: UpiPaymentPr
           </div>
           <button
             type="button"
-            onClick={() => handleCopy(UPI_ID, 'id')}
+            onClick={handleCopyUpiId}
             className="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95"
           >
-            {copiedField === 'id' ? (
+            {copied ? (
               <>
                 <Check size={13} className="text-emerald-600" />
                 <span className="text-emerald-700">Copied</span>
@@ -189,9 +160,9 @@ export default function UpiPayment({ tier, amount, reservationId }: UpiPaymentPr
         <div className="flex items-start gap-2">
           <Info size={14} className="text-amber-700 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-bold">Security Note from PhonePe / UPI:</p>
+            <p className="font-bold">Instructions:</p>
             <p className="mt-0.5 text-stone-600">
-              If your payment app declines the direct button link, please <strong>scan the QR code</strong> directly with PhonePe / GPay or send ₹{amount} to mobile number <strong>{UPI_PHONE}</strong>.
+              Scan the QR code above or tap the button to pay ₹{amount}. After paying, enter your <strong>12-digit UTR / UPI Ref ID</strong> below to confirm your ticket.
             </p>
           </div>
         </div>
