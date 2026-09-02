@@ -7,7 +7,7 @@ function validateAdminKey(request: Request): boolean {
   return !!adminKey && authHeader === adminKey;
 }
 
-// GET: Fetch all registrations
+// GET: Fetch all registrations with clean classification
 export async function GET(request: Request) {
   if (!validateAdminKey(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -15,6 +15,13 @@ export async function GET(request: Request) {
 
   try {
     const supabase = createServerClient();
+
+    // Auto-cleanup stale reservations older than expires_at before fetching
+    await supabase
+      .from('registrations')
+      .update({ status: 'expired', updated_at: new Date().toISOString() })
+      .eq('status', 'reserved')
+      .lt('expires_at', new Date().toISOString());
 
     const { data, error } = await supabase.rpc('get_all_registrations');
 
@@ -50,7 +57,7 @@ export async function GET(request: Request) {
   }
 }
 
-// POST: Update registration status (approve/reject)
+// POST: Update registration status or purge abandoned locks
 export async function POST(request: Request) {
   if (!validateAdminKey(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -58,13 +65,30 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
+
+    const supabase = createServerClient();
+
+    // Handle purge action
+    if (body.action === 'purge_expired') {
+      await supabase
+        .from('registrations')
+        .delete()
+        .eq('status', 'reserved')
+        .lt('expires_at', new Date().toISOString());
+
+      await supabase
+        .from('registrations')
+        .delete()
+        .eq('status', 'expired');
+
+      return NextResponse.json({ success: true, message: 'Purged all expired and abandoned locks' });
+    }
+
     const { id, status } = body;
 
     if (!id || !['verified', 'rejected', 'expired'].includes(status)) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
-
-    const supabase = createServerClient();
 
     const { error } = await supabase.rpc('update_registration_status', {
       p_id: id,

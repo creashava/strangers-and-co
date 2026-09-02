@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Registration, SlotCounts } from '@/lib/types';
 import {
   Shield, LogIn, LogOut, Users, IndianRupee, Zap, Download,
-  CheckCircle2, XCircle, Eye, X, RefreshCw, Search
+  CheckCircle2, XCircle, Eye, X, RefreshCw, Search, Trash2, Clock
 } from 'lucide-react';
 
 interface AdminData {
@@ -20,7 +20,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<'verified' | 'reserved' | 'all'>('verified');
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -86,11 +86,33 @@ export default function AdminPage() {
     }
   };
 
+  const handlePurgeExpired = async () => {
+    try {
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-key': adminKey,
+        },
+        body: JSON.stringify({ action: 'purge_expired' }),
+      });
+
+      if (res.ok) {
+        fetchData();
+      }
+    } catch {
+      setError('Failed to purge locks');
+    }
+  };
+
   const exportCSV = () => {
     if (!data?.registrations) return;
 
-    const headers = ['Name', 'Email', 'Phone', 'Tier', 'Amount', 'UTR', 'Status', 'Date'];
-    const rows = data.registrations.map(r => [
+    // By default, only export confirmed paid attendees
+    const confirmedList = data.registrations.filter(r => r.status === 'verified');
+
+    const headers = ['Name', 'Email', 'Phone', 'Tier', 'Amount', 'UTR', 'Status', 'Booking Date'];
+    const rows = confirmedList.map(r => [
       r.full_name,
       r.email,
       r.phone,
@@ -106,22 +128,35 @@ export default function AdminPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `strangers-co-registrations-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `strangers-co-attendees-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
-  const filteredRegistrations = data?.registrations.filter(r => {
-    const matchesSearch = searchQuery === '' ||
-      r.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.phone.includes(searchQuery) ||
-      (r.utr_number && r.utr_number.includes(searchQuery));
+  // Metrics
+  const paidRegistrations = data?.registrations.filter(r => r.status === 'verified') || [];
+  const inProgressLocks = data?.registrations.filter(r => r.status === 'reserved') || [];
 
-    const matchesStatus = filterStatus === 'all' || r.status === filterStatus;
+  const totalRevenue = paidRegistrations.reduce((sum, r) => sum + Number(r.amount_paid), 0);
+  const earlyBirdVerified = paidRegistrations.filter(r => r.tier === 'early_bird').length;
+  const verifiedCount = paidRegistrations.length;
 
-    return matchesSearch && matchesStatus;
-  }) || [];
+  // Filter registrations based on active tab and search query
+  const displayedRegistrations = (data?.registrations || []).filter(r => {
+    // Tab filter
+    if (activeTab === 'verified' && r.status !== 'verified') return false;
+    if (activeTab === 'reserved' && r.status !== 'reserved') return false;
+
+    // Search query filter
+    if (searchQuery.trim() === '') return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      (r.full_name && r.full_name.toLowerCase().includes(q)) ||
+      (r.email && r.email.toLowerCase().includes(q)) ||
+      (r.phone && r.phone.includes(q)) ||
+      (r.utr_number && r.utr_number.includes(q))
+    );
+  });
 
   // ─── Login Screen ───
   if (!isAuthenticated) {
@@ -166,13 +201,6 @@ export default function AdminPage() {
   }
 
   // ─── Dashboard ───
-  const counts = data?.slotCounts;
-  const totalRevenue = data?.registrations
-    .filter(r => r.status === 'verified')
-    .reduce((sum, r) => sum + Number(r.amount_paid), 0) || 0;
-  const verifiedCount = data?.registrations.filter(r => r.status === 'verified').length || 0;
-  const earlyBirdVerified = data?.registrations.filter(r => r.tier === 'early_bird' && r.status === 'verified').length || 0;
-
   return (
     <main className="min-h-screen bg-[#FAF7F2] text-[#1C1917]">
       {/* Screenshot Modal */}
@@ -205,7 +233,15 @@ export default function AdminPage() {
             </div>
             <p className="text-xs text-stone-500 font-medium">Organised by Taranga • Avinya Cafe, Mysore</p>
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handlePurgeExpired}
+              className="p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-all text-xs font-bold flex items-center gap-1.5"
+              title="Clear abandoned 7-minute locks"
+            >
+              <Trash2 size={14} />
+              <span className="hidden sm:inline">Clear Inactive Locks</span>
+            </button>
             <button
               onClick={fetchData}
               disabled={isLoading}
@@ -241,67 +277,110 @@ export default function AdminPage() {
             <p className="text-2xl font-black text-emerald-900">
               ₹{totalRevenue.toLocaleString('en-IN')}
             </p>
+            <p className="text-[10px] text-stone-400 mt-1 font-medium">From confirmed attendees</p>
           </div>
 
           <div className="rounded-2xl border border-orange-200 bg-white p-4 shadow-xs">
             <div className="flex items-center gap-1.5 mb-1.5 text-xs text-orange-800 font-bold uppercase tracking-wider">
               <Zap size={14} />
-              <span>Early Bird Filled</span>
+              <span>Early Bird Paid</span>
             </div>
             <p className="text-2xl font-black text-orange-900">
               {earlyBirdVerified} / 10
             </p>
+            <p className="text-[10px] text-stone-400 mt-1 font-medium">₹199 passes confirmed</p>
           </div>
 
           <div className="rounded-2xl border border-blue-200 bg-white p-4 shadow-xs">
             <div className="flex items-center gap-1.5 mb-1.5 text-xs text-blue-800 font-bold uppercase tracking-wider">
               <Users size={14} />
-              <span>Total Confirmed</span>
+              <span>Confirmed Paid</span>
             </div>
             <p className="text-2xl font-black text-blue-900">
               {verifiedCount} / 40
             </p>
+            <p className="text-[10px] text-stone-400 mt-1 font-medium">Total paid entries</p>
           </div>
 
           <div className="rounded-2xl border border-purple-200 bg-white p-4 shadow-xs">
             <div className="flex items-center gap-1.5 mb-1.5 text-xs text-purple-800 font-bold uppercase tracking-wider">
-              <Shield size={14} />
-              <span>Active Locks</span>
+              <Clock size={14} />
+              <span>In-Progress Locks</span>
             </div>
             <p className="text-2xl font-black text-purple-900">
-              {counts?.total_taken || 0}
+              {inProgressLocks.length}
             </p>
+            <p className="text-[10px] text-stone-400 mt-1 font-medium">Unpaid (7-min timer)</p>
           </div>
         </div>
 
-        {/* Filters and Search */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <div className="relative flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+        {/* View Switcher Tabs & Search */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-5 items-stretch sm:items-center justify-between">
+          {/* Main Status Tabs */}
+          <div className="flex gap-1.5 bg-stone-200/70 p-1 rounded-2xl">
+            <button
+              onClick={() => setActiveTab('verified')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                activeTab === 'verified'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              <CheckCircle2 size={14} className="text-emerald-600" />
+              <span>Paid &amp; Confirmed ({verifiedCount})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('reserved')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                activeTab === 'reserved'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              <Clock size={14} className="text-amber-600" />
+              <span>Checkout In-Progress ({inProgressLocks.length})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                activeTab === 'all'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              All Records
+            </button>
+          </div>
+
+          {/* Search bar */}
+          <div className="relative sm:w-80">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
             <input
               type="text"
-              placeholder="Search by attendee name, email, phone, UTR..."
+              placeholder="Search by name, phone, UTR..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-stone-300 rounded-2xl px-4 py-2.5 pl-10 text-stone-900 placeholder-stone-400 text-xs outline-none focus:border-[#15803D] transition-all font-medium"
+              className="w-full bg-white border border-stone-300 rounded-2xl px-4 py-2 pl-9 text-stone-900 placeholder-stone-400 text-xs outline-none focus:border-[#15803D] transition-all font-medium"
             />
           </div>
-          <div className="flex gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-            {['all', 'verified', 'reserved', 'rejected', 'expired'].map((status) => (
-              <button
-                key={status}
-                onClick={() => setFilterStatus(status)}
-                className={`px-3 py-2 rounded-xl text-xs font-bold capitalize transition-all whitespace-nowrap ${
-                  filterStatus === status
-                    ? 'bg-stone-900 text-white shadow-xs'
-                    : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'
-                }`}
-              >
-                {status}
-              </button>
-            ))}
-          </div>
         </div>
+
+        {/* Informative notification if viewing In-Progress Locks */}
+        {activeTab === 'reserved' && (
+          <div className="mb-4 p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center justify-between gap-2">
+            <span>
+              ⏱️ <strong>Temporary Locks:</strong> These are visitors currently scanning the QR code. If they do not submit their UTR within 7 minutes, the lock expires automatically.
+            </span>
+            <button
+              onClick={handlePurgeExpired}
+              className="px-2.5 py-1 rounded-lg bg-amber-200/80 hover:bg-amber-300 text-amber-900 text-[11px] font-bold whitespace-nowrap"
+            >
+              Clear Stale Locks
+            </button>
+          </div>
+        )}
 
         {/* Registration Table */}
         <div className="rounded-3xl border border-stone-200 bg-white shadow-xs overflow-hidden">
@@ -313,22 +392,26 @@ export default function AdminPage() {
                   <th className="text-left py-3.5 px-4">Attendee</th>
                   <th className="text-left py-3.5 px-4">Contact</th>
                   <th className="text-left py-3.5 px-4">Tier</th>
-                  <th className="text-left py-3.5 px-4">Paid</th>
-                  <th className="text-left py-3.5 px-4">UTR Number</th>
+                  <th className="text-left py-3.5 px-4">Amount</th>
+                  <th className="text-left py-3.5 px-4">12-Digit UTR</th>
                   <th className="text-left py-3.5 px-4">Status</th>
                   <th className="text-left py-3.5 px-4">Receipt</th>
                   <th className="text-left py-3.5 px-4">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
-                {filteredRegistrations.length === 0 ? (
+                {displayedRegistrations.length === 0 ? (
                   <tr>
                     <td colSpan={9} className="text-center py-12 text-stone-400 font-medium">
-                      {isLoading ? 'Refreshing registrations...' : 'No registrations found'}
+                      {activeTab === 'verified'
+                        ? 'No confirmed paid attendees yet. Real bookings will appear here instantly!'
+                        : activeTab === 'reserved'
+                        ? 'No active 7-minute checkout locks right now.'
+                        : 'No records found.'}
                     </td>
                   </tr>
                 ) : (
-                  filteredRegistrations.map((reg) => (
+                  displayedRegistrations.map((reg) => (
                     <tr key={reg.id} className="hover:bg-stone-50/60 transition-colors">
                       <td className="py-3.5 px-4 text-stone-500 whitespace-nowrap">
                         {new Date(reg.created_at).toLocaleString('en-IN', {
@@ -340,7 +423,7 @@ export default function AdminPage() {
                       </td>
                       <td className="py-3.5 px-4 font-bold text-stone-900">
                         {reg.full_name === 'PENDING' ? (
-                          <span className="text-stone-400 italic font-normal">Pending fill</span>
+                          <span className="text-amber-600 font-medium italic">Payment In-Progress</span>
                         ) : (
                           reg.full_name
                         )}
@@ -360,7 +443,9 @@ export default function AdminPage() {
                       </td>
                       <td className="py-3.5 px-4 font-black text-stone-900">₹{reg.amount_paid}</td>
                       <td className="py-3.5 px-4 font-mono text-stone-700 font-bold">
-                        {reg.utr_number || '—'}
+                        {reg.utr_number || (
+                          <span className="text-stone-300 font-normal italic">Waiting for UTR</span>
+                        )}
                       </td>
                       <td className="py-3.5 px-4">
                         <StatusBadge status={reg.status} />
@@ -410,7 +495,7 @@ export default function AdminPage() {
         </div>
 
         <p className="text-xs text-stone-400 mt-4 text-center">
-          Showing {filteredRegistrations.length} of {data?.registrations.length || 0} attendees • Auto-refreshing live
+          Showing {displayedRegistrations.length} records • Auto-refreshing live
         </p>
       </div>
     </main>
@@ -425,9 +510,16 @@ function StatusBadge({ status }: { status: string }) {
     expired: 'bg-stone-100 text-stone-500 border-stone-200',
   };
 
+  const labels: Record<string, string> = {
+    verified: 'PAID & CONFIRMED',
+    reserved: 'LOCK IN-PROGRESS',
+    rejected: 'REJECTED',
+    expired: 'EXPIRED',
+  };
+
   return (
     <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${styles[status] || styles.expired}`}>
-      {status}
+      {labels[status] || status}
     </span>
   );
 }
