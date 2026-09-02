@@ -1,7 +1,6 @@
 'use client';
 
-import { QRCodeSVG } from 'qrcode.react';
-import { buildUpiUri, TIER_CONFIG, UPI_ID, PAYEE_NAME } from '@/lib/constants';
+import { TIER_CONFIG, UPI_ID, PAYEE_NAME } from '@/lib/constants';
 import type { TicketTier } from '@/lib/types';
 import { Copy, Check, Info } from 'lucide-react';
 import { useState } from 'react';
@@ -12,10 +11,8 @@ interface UpiPaymentProps {
   reservationId: string;
 }
 
-export default function UpiPayment({ tier, amount, reservationId }: UpiPaymentProps) {
+export default function UpiPayment({ tier, amount }: UpiPaymentProps) {
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'phonepe' | 'qr'>('phonepe');
-  const upiUri = buildUpiUri(amount, reservationId);
   const config = TIER_CONFIG[tier];
   const isEarlyBird = tier === 'early_bird';
 
@@ -51,64 +48,23 @@ export default function UpiPayment({ tier, amount, reservationId }: UpiPaymentPr
         </p>
       </div>
 
-      {/* Payment Mode Selector Tabs */}
-      <div className="flex rounded-2xl bg-stone-100 p-1 mb-4 border border-stone-200">
-        <button
-          type="button"
-          onClick={() => setActiveTab('phonepe')}
-          className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-            activeTab === 'phonepe'
-              ? 'bg-white text-stone-900 shadow-xs'
-              : 'text-stone-500 hover:text-stone-800'
-          }`}
-        >
-          PhonePe Official QR
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('qr')}
-          className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-            activeTab === 'qr'
-              ? 'bg-white text-stone-900 shadow-xs'
-              : 'text-stone-500 hover:text-stone-800'
-          }`}
-        >
-          Universal QR
-        </button>
-      </div>
-
-      {/* QR Container */}
+      {/* Single All-in-One QR Code Container */}
       <div className="relative rounded-3xl bg-white p-5 border-2 border-stone-200 shadow-sm flex flex-col items-center">
-        {activeTab === 'phonepe' ? (
-          <div className="flex flex-col items-center w-full">
-            <div className="w-full max-w-[240px] rounded-2xl overflow-hidden border border-stone-200 shadow-xs bg-white">
-              <img
-                src="/phonepe-qr.jpg"
-                alt="PhonePe QR for DIVYA"
-                className="w-full h-auto object-contain"
-              />
-            </div>
-            <p className="text-[11px] text-stone-500 font-semibold mt-3 text-center">
-              Scan with PhonePe, Google Pay, or Paytm
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center w-full">
-            <div className="bg-white p-3 rounded-2xl border border-stone-100 shadow-xs">
-              <QRCodeSVG
-                value={upiUri}
-                size={200}
-                level="H"
-                includeMargin={false}
-                bgColor="#FFFFFF"
-                fgColor="#1C1917"
-              />
-            </div>
-            <p className="text-[11px] text-stone-500 font-semibold mt-3 text-center">
-              Scan to send ₹{amount} to {PAYEE_NAME}
-            </p>
-          </div>
-        )}
+        <div className="w-full max-w-[240px] rounded-2xl overflow-hidden border border-stone-200 shadow-xs bg-white">
+          <img
+            src="/phonepe-qr.jpg"
+            alt={`UPI QR for ${PAYEE_NAME}`}
+            className="w-full h-auto object-contain"
+          />
+        </div>
+        <div className="mt-3 text-center">
+          <span className="inline-block text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full mb-1">
+            Universal UPI QR
+          </span>
+          <p className="text-xs text-stone-600 font-semibold">
+            Scan with any UPI app (Google Pay, PhonePe, Paytm, CRED)
+          </p>
+        </div>
       </div>
 
       {/* UPI ID Quick Copy */}
