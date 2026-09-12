@@ -272,7 +272,7 @@ export default function HomePage() {
               {/* DM CTA Button */}
               <div>
                 <a
-                  href="https://instagram.com"
+                  href="https://www.instagram.com/taranga_org?stkn=MXN6b3IwM3o4eWdvaA=="
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full py-4 px-6 rounded-2xl font-bold text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-sm bg-gradient-to-r from-[#D97706] to-[#F59E0B] hover:from-[#B45309] hover:to-[#D97706] text-white hover:shadow-md hover:shadow-amber-500/20 active:scale-[0.98]"
