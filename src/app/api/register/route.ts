@@ -32,6 +32,26 @@ export async function POST(request: Request) {
     if (!screenshot || !(screenshot instanceof Blob) || screenshot.size === 0) {
       return NextResponse.json({ success: false, message: 'Payment screenshot is required' }, { status: 400 });
     }
+    if (screenshot.size < 15 * 1024) {
+      return NextResponse.json(
+        { success: false, message: 'Uploaded file is too small to be a valid screenshot' },
+        { status: 400 }
+      );
+    }
+    if (screenshot.size > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        { success: false, message: 'Screenshot exceeds 5MB size limit' },
+        { status: 400 }
+      );
+    }
+    const validMimes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (screenshot.type && !validMimes.includes(screenshot.type)) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid image format. Please upload JPG, PNG, or WEBP' },
+        { status: 400 }
+      );
+    }
+
 
     const supabase = createServerClient();
 

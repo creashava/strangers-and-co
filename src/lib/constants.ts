@@ -61,13 +61,16 @@ export const UPI_ID = process.env.NEXT_PUBLIC_UPI_ID || '7411198298-2@ibl';
 export const PAYEE_NAME = process.env.NEXT_PUBLIC_PAYEE_NAME || 'DIVYA';
 
 export function buildUpiUri(amount: number, reservationId?: string): string {
+  const note = reservationId
+    ? `Strangers and Co REG_${reservationId.slice(0, 8).toUpperCase()}`
+    : 'Strangers and Co Ticket';
   const params = new URLSearchParams({
     pa: UPI_ID,
     pn: PAYEE_NAME,
     am: amount.toString(),
     cu: 'INR',
-    mode: '02',
-    purpose: '00',
+    tn: note,
   });
   return `upi://pay?${params.toString()}`;
 }
+

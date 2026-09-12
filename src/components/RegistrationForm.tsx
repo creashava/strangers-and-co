@@ -3,14 +3,35 @@
 import { useState, useRef } from 'react';
 import { UTR_REGEX, PHONE_REGEX, EMAIL_REGEX } from '@/lib/constants';
 import type { RegistrationFormData } from '@/lib/types';
-import { Upload, User, Mail, Phone, Hash, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import {
+  analyzeScreenshot,
+  validateImageFile,
+  type ScreenshotVerificationResult,
+} from '@/lib/screenshotVerifier';
+import {
+  Upload,
+  User,
+  Mail,
+  Phone,
+  Hash,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  AlertTriangle,
+  FileCheck,
+} from 'lucide-react';
 
 interface RegistrationFormProps {
   onSubmit: (data: RegistrationFormData) => Promise<void>;
   isSubmitting: boolean;
+  expectedAmount?: number;
 }
 
-export default function RegistrationForm({ onSubmit, isSubmitting }: RegistrationFormProps) {
+export default function RegistrationForm({
+  onSubmit,
+  isSubmitting,
+  expectedAmount = 99,
+}: RegistrationFormProps) {
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -19,6 +40,8 @@ export default function RegistrationForm({ onSubmit, isSubmitting }: Registratio
   });
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
+  const [isVerifyingScreenshot, setIsVerifyingScreenshot] = useState(false);
+  const [verificationResult, setVerificationResult] = useState<ScreenshotVerificationResult | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -43,6 +66,8 @@ export default function RegistrationForm({ onSubmit, isSubmitting }: Registratio
 
     if (!screenshot) {
       newErrors.screenshot = 'Please upload your payment screenshot';
+    } else if (verificationResult?.status === 'rejected') {
+      newErrors.screenshot = verificationResult.message || 'Invalid payment receipt image';
     }
 
     setErrors(newErrors);
@@ -63,24 +88,65 @@ export default function RegistrationForm({ onSubmit, isSubmitting }: Registratio
     });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors((prev) => ({ ...prev, screenshot: 'Screenshot file must be under 5MB' }));
-        return;
+    if (!file) return;
+
+    // Fast pre-check
+    const preCheck = await validateImageFile(file);
+    if (!preCheck.ok) {
+      setErrors((prev) => ({ ...prev, screenshot: preCheck.error || 'Invalid image file' }));
+      return;
+    }
+
+    setScreenshot(file);
+    setVerificationResult(null);
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.screenshot;
+      return next;
+    });
+
+    const reader = new FileReader();
+    reader.onload = () => setScreenshotPreview(reader.result as string);
+    reader.readAsDataURL(file);
+
+    // Run OCR screenshot analysis in background
+    setIsVerifyingScreenshot(true);
+    try {
+      const result = await analyzeScreenshot(file, expectedAmount);
+      setVerificationResult(result);
+
+      if (result.status === 'rejected') {
+        setErrors((prev) => ({ ...prev, screenshot: result.message }));
+      } else {
+        // Clear screenshot error
+        setErrors((prev) => {
+          const next = { ...prev };
+          delete next.screenshot;
+          return next;
+        });
+
+        // Auto-fill UTR if detected from screenshot and field is empty or non-12-digit
+        if (result.detectedUtr) {
+          setFormData((prev) => ({
+            ...prev,
+            utr_number: result.detectedUtr || prev.utr_number,
+          }));
+          setErrors((prev) => {
+            const next = { ...prev };
+            delete next.utr_number;
+            return next;
+          });
+        }
       }
-      setScreenshot(file);
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next.screenshot;
-        return next;
-      });
-      const reader = new FileReader();
-      reader.onload = () => setScreenshotPreview(reader.result as string);
-      reader.readAsDataURL(file);
+    } catch {
+      // Non-blocking
+    } finally {
+      setIsVerifyingScreenshot(false);
     }
   };
+
 
   const inputClasses = (field: string) =>
     `w-full bg-stone-50/60 border ${
@@ -187,9 +253,14 @@ export default function RegistrationForm({ onSubmit, isSubmitting }: Registratio
 
       {/* Screenshot upload */}
       <div>
-        <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1.5 ml-1">
-          Payment Screenshot <span className="text-rose-500">*</span>
-        </label>
+        <div className="flex items-center justify-between mb-1.5 ml-1">
+          <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
+            Payment Screenshot <span className="text-rose-500">*</span>
+          </label>
+          <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
+            Required: ₹{expectedAmount}
+          </span>
+        </div>
         <input
           ref={fileInputRef}
           type="file"
@@ -201,43 +272,102 @@ export default function RegistrationForm({ onSubmit, isSubmitting }: Registratio
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className={`w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-2xl border-2 border-dashed transition-all cursor-pointer ${
-            screenshotPreview
-              ? 'border-emerald-500/60 bg-emerald-50/50'
-              : errors.screenshot
+          className={`w-full flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-2xl border-2 border-dashed transition-all cursor-pointer ${
+            verificationResult?.status === 'verified'
+              ? 'border-emerald-500/80 bg-emerald-50/60'
+              : verificationResult?.status === 'rejected' || errors.screenshot
               ? 'border-rose-400 bg-rose-50/40 ring-1 ring-rose-200'
+              : screenshotPreview
+              ? 'border-stone-400 bg-stone-50'
               : 'border-stone-300 bg-stone-50/50 hover:bg-stone-100/60 hover:border-stone-400'
           }`}
           disabled={isSubmitting}
         >
           {screenshotPreview ? (
             <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 truncate">
-                <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+              <div className="flex items-center gap-2 text-xs font-bold text-stone-800 truncate">
+                <FileCheck size={16} className="text-emerald-600 shrink-0" />
                 <span className="truncate">{screenshot?.name || 'Screenshot Attached'}</span>
               </div>
               <span className="text-[11px] font-semibold text-emerald-700 underline shrink-0 ml-2">
-                Change
+                Replace
               </span>
             </div>
           ) : (
             <>
               <Upload size={16} className={errors.screenshot ? 'text-rose-400' : 'text-stone-400'} />
               <span className={`text-xs font-medium ${errors.screenshot ? 'text-rose-600 font-semibold' : 'text-stone-600'}`}>
-                Upload payment screenshot
+                Upload payment screenshot (₹{expectedAmount})
               </span>
             </>
           )}
         </button>
-        {errors.screenshot && <ErrorText text={errors.screenshot} />}
+
+        {/* Real-time OCR Analysis Progress */}
+        {isVerifyingScreenshot && (
+          <div className="mt-2.5 p-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-center gap-2 animate-pulse">
+            <Loader2 size={14} className="animate-spin text-blue-600 shrink-0" />
+            <span>Scanning receipt: checking ₹{expectedAmount} amount &amp; 12-digit UTR...</span>
+          </div>
+        )}
+
+        {/* Verification Status Feedback */}
+        {!isVerifyingScreenshot && verificationResult && (
+          <div className="mt-2.5">
+            {verificationResult.status === 'verified' && (
+              <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                  <span>Valid Payment Screenshot Verified</span>
+                </div>
+                <p className="text-[11px] text-emerald-700 mt-0.5 ml-5">
+                  Amount ₹{expectedAmount} confirmed.{' '}
+                  {verificationResult.detectedUtr ? (
+                    <>
+                      UTR <strong className="font-mono font-bold text-emerald-800">{verificationResult.detectedUtr}</strong> detected &amp; auto-filled!
+                    </>
+                  ) : (
+                    'Please ensure your 12-digit UTR is entered above.'
+                  )}
+                </p>
+              </div>
+            )}
+
+            {verificationResult.status === 'warning' && (
+              <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <AlertTriangle size={14} className="text-amber-600 shrink-0" />
+                  <span>Screenshot Uploaded</span>
+                </div>
+                <p className="text-[11px] text-amber-800 mt-0.5 ml-5">
+                  {verificationResult.message}
+                </p>
+              </div>
+            )}
+
+            {verificationResult.status === 'rejected' && (
+              <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <AlertCircle size={14} className="text-rose-600 shrink-0" />
+                  <span>Invalid Screenshot</span>
+                </div>
+                <p className="text-[11px] text-rose-700 mt-0.5 ml-5">
+                  {verificationResult.message}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {errors.screenshot && !verificationResult?.status && <ErrorText text={errors.screenshot} />}
       </div>
 
       {/* Submit Button */}
       <div className="pt-2">
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="w-full py-4 rounded-2xl bg-[#15803D] hover:bg-[#166534] text-white font-bold text-sm tracking-wide shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          disabled={isSubmitting || isVerifyingScreenshot || verificationResult?.status === 'rejected'}
+          className="w-full py-4 rounded-2xl bg-[#15803D] hover:bg-[#166534] text-white font-bold text-sm tracking-wide shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
         >
           {isSubmitting ? (
             <>
@@ -249,6 +379,7 @@ export default function RegistrationForm({ onSubmit, isSubmitting }: Registratio
           )}
         </button>
       </div>
+
     </form>
   );
 }

@@ -141,23 +141,42 @@ function RegisterContent() {
 
         {/* Two-step progress bar */}
         <div className="grid grid-cols-2 gap-2 bg-stone-200/60 p-1.5 rounded-2xl mb-6">
-          <div className="py-2.5 px-3 rounded-xl text-xs font-bold bg-white text-stone-900 shadow-xs flex items-center justify-center gap-1.5">
-            <span className="w-4 h-4 rounded-full bg-stone-900 text-white text-[10px] flex items-center justify-center font-bold">
+          <button
+            type="button"
+            onClick={() => setStep('payment')}
+            className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              step === 'payment'
+                ? 'bg-white text-stone-900 shadow-xs'
+                : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <span
+              className={`w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-bold ${
+                step === 'payment' ? 'bg-stone-900 text-white' : 'bg-stone-300 text-stone-700'
+              }`}
+            >
               1
             </span>
-            <span>Scan &amp; Pay</span>
-          </div>
-          <a
-            href={GOOGLE_FORM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="py-2.5 px-3 rounded-xl text-xs font-bold text-stone-600 hover:text-stone-900 flex items-center justify-center gap-1.5 transition-all"
+            <span>1. Scan &amp; Pay (₹{amount})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setStep('form')}
+            className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              step === 'form'
+                ? 'bg-white text-stone-900 shadow-xs'
+                : 'text-stone-600 hover:text-stone-900'
+            }`}
           >
-            <span className="w-4 h-4 rounded-full bg-stone-300 text-stone-700 text-[10px] flex items-center justify-center font-bold">
+            <span
+              className={`w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-bold ${
+                step === 'form' ? 'bg-[#15803D] text-white' : 'bg-stone-300 text-stone-700'
+              }`}
+            >
               2
             </span>
-            <span>Next (Fill Form)</span>
-          </a>
+            <span>2. Verify &amp; Claim Ticket</span>
+          </button>
         </div>
 
         {/* Form / Payment Card */}
@@ -166,30 +185,33 @@ function RegisterContent() {
             <div>
               <UpiPayment tier={tier} amount={amount} reservationId={reservationId} />
               <div className="mt-6 pt-5 border-t border-stone-200">
-                <a
-                  href={GOOGLE_FORM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
+                  onClick={() => setStep('form')}
                   className="w-full py-4 px-6 rounded-2xl bg-[#15803D] hover:bg-[#166534] text-white font-extrabold text-base tracking-wide shadow-lg shadow-emerald-900/15 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 cursor-pointer group"
                 >
-                  <span>Next</span>
+                  <span>I Have Paid ₹{amount} → Next: Verify Screenshot</span>
                   <ArrowRight size={18} className="transition-transform group-hover:translate-x-1 text-white" />
-                </a>
+                </button>
                 <p className="text-xs text-stone-500 text-center mt-2.5 font-medium">
-                  Paid ₹{amount}? Tap <strong>Next</strong> to submit your UTR &amp; details in the registration form
+                  Completed payment of ₹{amount}? Tap the button above to upload your screenshot &amp; claim your ticket.
                 </p>
               </div>
             </div>
           ) : (
             <div>
-              <RegistrationForm onSubmit={handleFormSubmit} isSubmitting={isSubmitting} />
+              <RegistrationForm
+                onSubmit={handleFormSubmit}
+                isSubmitting={isSubmitting}
+                expectedAmount={amount}
+              />
               <div className="mt-4 pt-3 border-t border-stone-100 text-center">
                 <button
                   type="button"
                   onClick={() => setStep('payment')}
-                  className="text-xs font-semibold text-stone-500 hover:text-stone-700 transition-colors"
+                  className="text-xs font-semibold text-stone-500 hover:text-stone-700 transition-colors cursor-pointer"
                 >
-                  &larr; Need to see the UPI QR code again?
+                  &larr; Need to view the UPI QR code again?
                 </button>
               </div>
             </div>
