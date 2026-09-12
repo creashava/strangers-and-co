@@ -26,6 +26,8 @@ import {
   ShieldCheck,
   HelpCircle,
   Dice5,
+  MessageCircle,
+  Send,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -70,7 +72,7 @@ export default function HomePage() {
 
       if (result.success && result.reservation_id) {
         const assignedTier = result.tier_assigned || tier;
-        const passAmount = TIER_CONFIG[assignedTier]?.price || (assignedTier === 'early_bird' ? 199 : 229);
+        const passAmount = TIER_CONFIG[assignedTier]?.price || (assignedTier === 'early_bird' ? 99 : 149);
         const params = new URLSearchParams({
           id: result.reservation_id,
           tier: assignedTier,
@@ -193,8 +195,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Ticket Selection Cards (No seat counts, pure availability status) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+          {/* Ticket Selection Cards — Festival Offer, General Pass, On-Spot */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             <TierCard
               tier="early_bird"
               isAvailable={isEarlyBirdAvailable}
@@ -209,6 +211,80 @@ export default function HomePage() {
               isLoading={reservingTier === 'regular'}
               disabled={reservingTier !== null}
             />
+
+            {/* On-Spot Registration — Info Card (Non-bookable) */}
+            <div className="relative flex flex-col justify-between rounded-3xl p-6 sm:p-8 transition-all duration-300 border-2 bg-[#FFFBEB] border-[#FCD34D] hover:border-[#F59E0B] shadow-sm hover:shadow-xl hover:shadow-amber-100 hover:-translate-y-1">
+              {/* Top Tag */}
+              <div>
+                <div className="flex items-center justify-between gap-3 mb-5">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-[#FEF3C7] text-[#92400E]">
+                    <MapPin size={13} className="text-[#D97706]" />
+                    On-Spot
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100/80 text-amber-900">
+                    <span className="w-2 h-2 rounded-full bg-amber-600 animate-pulse" />
+                    Limited Slots
+                  </span>
+                </div>
+
+                {/* Title & Description */}
+                <h3 className="text-2xl font-extrabold text-[#1C1917] tracking-tight mb-2">
+                  📍 On-Spot Registration
+                </h3>
+                <p className="text-sm text-[#78716C] leading-relaxed mb-5 font-normal">
+                  Planning to register on the day of the event? Venue slots are strictly limited.
+                </p>
+
+                {/* Price Area */}
+                <div className="flex items-baseline gap-2 mb-4 pb-4 border-b border-stone-200/80">
+                  <span className="text-lg font-bold text-amber-700">Price:</span>
+                  <span className="text-2xl font-black text-[#0F172A] tracking-tight">
+                    At Venue
+                  </span>
+                  <span className="ml-auto text-xs font-bold text-amber-800 bg-amber-100/80 px-2.5 py-1 rounded-lg">
+                    Walk-in Only
+                  </span>
+                </div>
+
+                {/* Info */}
+                <div className="space-y-3 mb-8">
+                  <div className="flex items-start gap-3 p-3 rounded-2xl bg-amber-50/80 border border-amber-200/60">
+                    <MessageCircle size={18} className="text-amber-700 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-bold text-amber-900">How to book</p>
+                      <p className="text-xs text-amber-800/80 mt-0.5">
+                        DM us directly to reserve your spot ahead of time!
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3 rounded-2xl bg-amber-50/80 border border-amber-200/60">
+                    <Clock size={18} className="text-amber-700 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-bold text-amber-900">Limited availability</p>
+                      <p className="text-xs text-amber-800/80 mt-0.5">
+                        Walk-in slots are subject to venue capacity on the event day.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* DM CTA Button */}
+              <div>
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-4 px-6 rounded-2xl font-bold text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-sm bg-gradient-to-r from-[#D97706] to-[#F59E0B] hover:from-[#B45309] hover:to-[#D97706] text-white hover:shadow-md hover:shadow-amber-500/20 active:scale-[0.98]"
+                >
+                  <Send size={16} />
+                  <span>DM Us to Reserve</span>
+                </a>
+                <p className="text-center text-[11px] text-stone-400 mt-2 font-medium">
+                  Reach out on Instagram to secure your spot
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Experience Highlights */}
@@ -278,7 +354,7 @@ export default function HomePage() {
                 <div>
                   <h4 className="text-sm font-bold text-stone-800">Select Pass</h4>
                   <p className="text-xs text-stone-500 mt-1">
-                    Choose Early Bird or General Admission. Your spot is locked for 7 minutes.
+                    Choose Festival Offer or General Pass. Your spot is locked for 7 minutes.
                   </p>
                 </div>
               </div>

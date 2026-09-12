@@ -64,7 +64,7 @@ export default function DigitalTicket({
         <div
           className={`p-6 pb-7 text-white ${
             isEarlyBird
-              ? 'bg-gradient-to-br from-[#EA580C] to-[#C2410C]'
+              ? 'bg-gradient-to-br from-[#A21CAF] to-[#86198F]'
               : 'bg-gradient-to-br from-[#15803D] to-[#0F382C]'
           }`}
         >

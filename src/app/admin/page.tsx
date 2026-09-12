@@ -280,15 +280,15 @@ export default function AdminPage() {
             <p className="text-[10px] text-stone-400 mt-1 font-medium">From confirmed attendees</p>
           </div>
 
-          <div className="rounded-2xl border border-orange-200 bg-white p-4 shadow-xs">
-            <div className="flex items-center gap-1.5 mb-1.5 text-xs text-orange-800 font-bold uppercase tracking-wider">
+          <div className="rounded-2xl border border-purple-200 bg-white p-4 shadow-xs">
+            <div className="flex items-center gap-1.5 mb-1.5 text-xs text-purple-800 font-bold uppercase tracking-wider">
               <Zap size={14} />
-              <span>Early Bird Paid</span>
+              <span>Festival Offer Paid</span>
             </div>
-            <p className="text-2xl font-black text-orange-900">
+            <p className="text-2xl font-black text-purple-900">
               {earlyBirdVerified} / 10
             </p>
-            <p className="text-[10px] text-stone-400 mt-1 font-medium">₹199 passes confirmed</p>
+            <p className="text-[10px] text-stone-400 mt-1 font-medium">₹99 passes confirmed</p>
           </div>
 
           <div className="rounded-2xl border border-blue-200 bg-white p-4 shadow-xs">
@@ -435,10 +435,10 @@ export default function AdminPage() {
                       <td className="py-3.5 px-4">
                         <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                           reg.tier === 'early_bird'
-                            ? 'bg-orange-100 text-orange-800'
+                            ? 'bg-purple-100 text-purple-800'
                             : 'bg-emerald-100 text-emerald-800'
                         }`}>
-                          {reg.tier === 'early_bird' ? 'Early Bird' : 'Regular'}
+                          {reg.tier === 'early_bird' ? 'Festival' : 'General'}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 font-black text-stone-900">₹{reg.amount_paid}</td>

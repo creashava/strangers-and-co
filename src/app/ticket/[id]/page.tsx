@@ -14,7 +14,7 @@ function TicketContent() {
   const bookingId = params.id as string;
   const name = searchParams.get('name') || 'Attendee';
   const tier = (searchParams.get('tier') as TicketTier) || 'regular';
-  const amount = Number(searchParams.get('amount') || 229);
+  const amount = Number(searchParams.get('amount') || 149);
 
   return (
     <main className="min-h-screen bg-[#FAF7F2] text-[#1C1917] selection:bg-[#FED7AA] selection:text-[#7C2D12]">

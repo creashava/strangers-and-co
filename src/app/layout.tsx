@@ -18,7 +18,7 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Strangers & Co | Mysore — Taranga",
   description:
-    "Meet. Mingle. Make Friends. Join Mysore's most exciting social meetup at Avinya Cafe on September 20, 2026. 2PM to 5PM. Early bird passes available.",
+    "Meet. Mingle. Make Friends. Join Mysore's most exciting social meetup at Avinya Cafe on September 20, 2026. 2PM to 5PM. Festival offer passes available.",
   keywords: ["Strangers & Co", "Taranga", "Mysore events", "Avinya Cafe", "meetup", "social mixer", "games"],
   openGraph: {
     title: "Strangers & Co | Mysore — Taranga",

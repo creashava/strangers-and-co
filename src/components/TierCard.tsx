@@ -1,10 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { TIER_CONFIG } from '@/lib/constants';
 import type { TicketTier } from '@/lib/types';
-import { Sparkles, Check, Flame, ArrowRight, ShieldCheck } from 'lucide-react';
-import ScratchCard from '@/components/ScratchCard';
+import { Sparkles, Check, Ticket, ArrowRight, ShieldCheck, Star, Crown } from 'lucide-react';
 
 interface TierCardProps {
   tier: TicketTier;
@@ -21,40 +19,50 @@ export default function TierCard({
   disabled = false,
   isLoading = false,
 }: TierCardProps) {
-  const [isScratched, setIsScratched] = useState(false);
   const config = TIER_CONFIG[tier];
-  const isEarlyBird = tier === 'early_bird';
+  const isFestival = tier === 'early_bird';
   const isDisabled = disabled || !isAvailable || isLoading;
 
   return (
     <div
       className={`relative flex flex-col justify-between rounded-3xl p-6 sm:p-8 transition-all duration-300 border-2 ${
-        isEarlyBird
-          ? 'bg-[#FFFBF5] border-[#FDBA74] hover:border-[#EA580C] shadow-sm hover:shadow-xl hover:shadow-orange-100'
+        isFestival
+          ? 'bg-[#FDF4FF] border-[#E879F9] hover:border-[#A21CAF] shadow-sm hover:shadow-xl hover:shadow-purple-100'
           : 'bg-[#F9FAF7] border-[#86EFAC] hover:border-[#15803D] shadow-sm hover:shadow-xl hover:shadow-emerald-100'
       } ${!isAvailable ? 'opacity-60 grayscale-[40%] cursor-not-allowed' : 'cursor-pointer hover:-translate-y-1'}`}
       onClick={() => !isDisabled && onSelect(tier)}
     >
+      {/* Limited Time Ribbon for Festival Offer */}
+      {isFestival && isAvailable && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-gradient-to-r from-[#A21CAF] to-[#D946EF] text-white shadow-lg shadow-purple-500/25 animate-pulse">
+            <Star size={12} className="fill-amber-300 text-amber-300" />
+            Limited Time
+            <Star size={12} className="fill-amber-300 text-amber-300" />
+          </span>
+        </div>
+      )}
+
       {/* Top Tag & Status */}
       <div>
-        <div className="flex items-center justify-between gap-3 mb-5">
+        <div className={`flex items-center justify-between gap-3 ${isFestival ? 'mt-3' : ''} mb-5`}>
           <span
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase ${
-              isEarlyBird
-                ? 'bg-[#FFEDD5] text-[#C2410C]'
+              isFestival
+                ? 'bg-[#F5D0FE] text-[#86198F]'
                 : 'bg-[#DCFCE7] text-[#166534]'
             }`}
           >
-            {isEarlyBird ? <Flame size={13} className="text-[#EA580C]" /> : <Sparkles size={13} className="text-[#15803D]" />}
+            {isFestival ? <Ticket size={13} className="text-[#A21CAF]" /> : <Crown size={13} className="text-[#15803D]" />}
             {config.badge}
           </span>
 
-          {/* Availability Status Badge - NO NUMBERS, just Available vs Sold Out */}
+          {/* Availability Status Badge */}
           <span
             className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
               isAvailable
-                ? isEarlyBird
-                  ? 'bg-amber-100/80 text-amber-900'
+                ? isFestival
+                  ? 'bg-purple-100/80 text-purple-900'
                   : 'bg-emerald-100/80 text-emerald-900'
                 : 'bg-stone-200 text-stone-600'
             }`}
@@ -62,30 +70,30 @@ export default function TierCard({
             <span
               className={`w-2 h-2 rounded-full ${
                 isAvailable
-                  ? isEarlyBird
-                    ? 'bg-[#EA580C] animate-pulse'
+                  ? isFestival
+                    ? 'bg-[#A21CAF] animate-pulse'
                     : 'bg-[#16A34A] animate-pulse'
                   : 'bg-stone-400'
               }`}
             />
-            {isAvailable ? (isEarlyBird ? 'Offer Active' : 'Offer Active') : 'Sold Out'}
+            {isAvailable ? 'Offer Active' : 'Sold Out'}
           </span>
         </div>
 
         {/* Title & Description */}
         <h3 className="text-2xl font-extrabold text-[#1C1917] tracking-tight mb-2">
-          {config.label}
+          {isFestival ? '🎟️ ' : '🎟️ '}{config.label}
         </h3>
         <p className="text-sm text-[#78716C] leading-relaxed mb-5 font-normal">
           {config.description}
         </p>
 
-        {/* Price Tag with Scratch Offer Display */}
+        {/* Price Tag */}
         <div className="flex items-baseline gap-2 mb-4 pb-4 border-b border-stone-200/80">
-          {isEarlyBird ? (
+          {isFestival ? (
             <>
               <span className="text-lg font-bold text-stone-400 line-through decoration-rose-500/70 mr-1">
-                ₹249
+                ₹{config.originalPrice}
               </span>
               <span className="text-lg font-bold text-stone-400">₹</span>
               <span className="text-5xl font-black text-[#0F172A] tracking-tight">
@@ -94,67 +102,71 @@ export default function TierCard({
               <span className="text-xs font-medium text-stone-500 ml-1 uppercase tracking-wider">
                 / person
               </span>
-              <span className="ml-auto text-xs font-bold text-[#EA580C] bg-orange-100/80 px-2.5 py-1 rounded-lg">
-                Save ₹50
+              <span className="ml-auto text-xs font-bold text-[#A21CAF] bg-purple-100/80 px-2.5 py-1 rounded-lg">
+                Save ₹{(config.originalPrice ?? 0) - config.price}
               </span>
             </>
           ) : (
             <>
-              <span className="text-xl font-bold text-stone-400 line-through decoration-rose-500 decoration-2 mr-1">
-                ₹249
-              </span>
               <span className="text-lg font-bold text-stone-400">₹</span>
-              <span className={`text-5xl font-black tracking-tight transition-colors ${
-                isScratched ? 'text-emerald-700' : 'text-[#0F172A]'
-              }`}>
+              <span className="text-5xl font-black text-[#0F172A] tracking-tight">
                 {config.price}
               </span>
               <span className="text-xs font-medium text-stone-500 ml-1 uppercase tracking-wider">
                 / person
               </span>
-              <span className={`ml-auto text-xs font-bold px-2.5 py-1 rounded-lg transition-all ${
-                isScratched
-                  ? 'text-emerald-800 bg-emerald-100 ring-2 ring-emerald-400/40 animate-pulse'
-                  : 'text-amber-800 bg-amber-100'
-              }`}>
-                {isScratched ? '🎉 Save ₹20' : 'Save ₹20 Offer'}
+              <span className="ml-auto text-xs font-bold text-emerald-800 bg-emerald-100/80 px-2.5 py-1 rounded-lg">
+                Exclusive Value
               </span>
             </>
           )}
         </div>
 
-        {/* Interactive Scratch Card on Regular Pass */}
-        {!isEarlyBird && (
-          <div className="mb-6">
-            <ScratchCard
-              originalPrice={249}
-              discountedPrice={229}
-              onReveal={() => setIsScratched(true)}
-              isRevealed={isScratched}
-            />
-          </div>
-        )}
-
         {/* Value Highlights */}
         <ul className="space-y-3 mb-8 text-sm text-[#44403C]">
-          <li className="flex items-center gap-2.5">
-            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
-              <Check size={12} strokeWidth={3} />
-            </span>
-            <span>Fun & interactive icebreaker games</span>
-          </li>
-          <li className="flex items-center gap-2.5">
-            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
-              <Check size={12} strokeWidth={3} />
-            </span>
-            <span>Full 3-hour experience at Avinya Cafe</span>
-          </li>
-          <li className="flex items-center gap-2.5">
-            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
-              <Check size={12} strokeWidth={3} />
-            </span>
-            <span>Meet & connect with friendly new people</span>
-          </li>
+          {isFestival ? (
+            <>
+              <li className="flex items-center gap-2.5">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center">
+                  <Check size={12} strokeWidth={3} />
+                </span>
+                <span>Fun & interactive icebreaker games</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center">
+                  <Check size={12} strokeWidth={3} />
+                </span>
+                <span>Full 3-hour experience at Avinya Cafe</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center">
+                  <Check size={12} strokeWidth={3} />
+                </span>
+                <span>Meet & connect with friendly new people</span>
+              </li>
+            </>
+          ) : (
+            <>
+              <li className="flex items-center gap-2.5">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                  <Check size={12} strokeWidth={3} />
+                </span>
+                <span>Everything in Festival Offer</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                  <Sparkles size={12} strokeWidth={3} />
+                </span>
+                <span className="font-semibold">Priority entry & line access</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                  <Sparkles size={12} strokeWidth={3} />
+                </span>
+                <span className="font-semibold">Complementary event resource kit</span>
+              </li>
+            </>
+          )}
           <li className="flex items-center gap-2.5">
             <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
               <ShieldCheck size={13} className="text-emerald-700" />
@@ -175,8 +187,8 @@ export default function TierCard({
           className={`w-full py-4 px-6 rounded-2xl font-bold text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-sm ${
             !isAvailable
               ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
-              : isEarlyBird
-              ? 'bg-[#EA580C] hover:bg-[#C2410C] text-white hover:shadow-md hover:shadow-orange-500/20 active:scale-[0.98]'
+              : isFestival
+              ? 'bg-gradient-to-r from-[#A21CAF] to-[#D946EF] hover:from-[#86198F] hover:to-[#C026D3] text-white hover:shadow-md hover:shadow-purple-500/20 active:scale-[0.98]'
               : 'bg-[#15803D] hover:bg-[#166534] text-white hover:shadow-md hover:shadow-emerald-600/20 active:scale-[0.98]'
           }`}
         >
@@ -193,11 +205,9 @@ export default function TierCard({
           ) : (
             <>
               <span>
-                {isEarlyBird
-                  ? 'Book Early Bird (₹199)'
-                  : isScratched
-                  ? 'Book General Pass (₹229) • Offer Active'
-                  : 'Book General Pass (₹229)'}
+                {isFestival
+                  ? `Book Festival Pass (₹${config.price})`
+                  : `Book General Pass (₹${config.price})`}
               </span>
               <ArrowRight size={16} />
             </>

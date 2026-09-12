@@ -32,7 +32,7 @@ export default function UpiPayment({ tier, amount }: UpiPaymentProps) {
       <div className="text-center mb-5">
         <span
           className={`inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-2 ${
-            isEarlyBird ? 'bg-orange-100 text-orange-800' : 'bg-emerald-100 text-emerald-800'
+            isEarlyBird ? 'bg-purple-100 text-purple-800' : 'bg-emerald-100 text-emerald-800'
           }`}
         >
           {config.label}
