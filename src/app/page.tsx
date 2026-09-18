@@ -72,7 +72,7 @@ export default function HomePage() {
 
       if (result.success && result.reservation_id) {
         const assignedTier = result.tier_assigned || tier;
-        const passAmount = TIER_CONFIG[assignedTier]?.price || (assignedTier === 'early_bird' ? 99 : 149);
+        const passAmount = TIER_CONFIG[assignedTier]?.price || 149;
         const params = new URLSearchParams({
           id: result.reservation_id,
           tier: assignedTier,
@@ -91,7 +91,6 @@ export default function HomePage() {
   };
 
   // Availability flags — NO SEAT COUNTS DISPLAYED to the user!
-  const isEarlyBirdAvailable = (slotCounts?.early_bird_taken ?? 0) < 10;
   const isRegularAvailable = (slotCounts?.total_taken ?? 0) < 40;
 
   return (
@@ -195,15 +194,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Ticket Selection Cards — Festival Offer, General Pass, On-Spot */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-            <TierCard
-              tier="early_bird"
-              isAvailable={isEarlyBirdAvailable}
-              onSelect={handleSelectTier}
-              isLoading={reservingTier === 'early_bird'}
-              disabled={reservingTier !== null}
-            />
+          {/* Ticket Selection Cards — General Pass, On-Spot */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
             <TierCard
               tier="regular"
               isAvailable={isRegularAvailable}
@@ -354,7 +346,7 @@ export default function HomePage() {
                 <div>
                   <h4 className="text-sm font-bold text-stone-800">Select Pass</h4>
                   <p className="text-xs text-stone-500 mt-1">
-                    Choose Festival Offer or General Pass. Your spot is locked for 7 minutes.
+                    Book your General Pass. Your spot is locked for 7 minutes.
                   </p>
                 </div>
               </div>

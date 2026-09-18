@@ -22,7 +22,7 @@ export default function DigitalTicket({
   const ticketRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const config = TIER_CONFIG[tier];
-  const isEarlyBird = tier === 'early_bird';
+
 
   const handleDownload = useCallback(async () => {
     if (!ticketRef.current) return;
@@ -62,11 +62,7 @@ export default function DigitalTicket({
       >
         {/* Ticket Header */}
         <div
-          className={`p-6 pb-7 text-white ${
-            isEarlyBird
-              ? 'bg-gradient-to-br from-[#A21CAF] to-[#86198F]'
-              : 'bg-gradient-to-br from-[#15803D] to-[#0F382C]'
-          }`}
+          className="p-6 pb-7 text-white bg-gradient-to-br from-[#15803D] to-[#0F382C]"
         >
           <div className="flex items-start justify-between">
             <div>

@@ -13,8 +13,6 @@ export async function GET() {
       // Return safe defaults if DB is fresh or tables are pending
       return NextResponse.json(
         {
-          early_bird_taken: 0,
-          early_bird_total: 10,
           regular_taken: 0,
           total_taken: 0,
           total_capacity: 40,
@@ -33,8 +31,6 @@ export async function GET() {
   } catch (error) {
     return NextResponse.json(
       {
-        early_bird_taken: 0,
-        early_bird_total: 10,
         regular_taken: 0,
         total_taken: 0,
         total_capacity: 40,

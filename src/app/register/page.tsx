@@ -83,7 +83,6 @@ function RegisterContent() {
   }
 
   const config = TIER_CONFIG[tier];
-  const isEarlyBird = tier === 'early_bird';
 
   if (isExpired) {
     return (

@@ -1,8 +1,8 @@
 // ============================================================
-// TypeScript interfaces for the Early-Bird Payment System
+// TypeScript interfaces for the Payment System
 // ============================================================
 
-export type TicketTier = 'early_bird' | 'regular';
+export type TicketTier = 'regular';
 export type RegistrationStatus = 'reserved' | 'verified' | 'rejected' | 'expired';
 
 export interface Registration {
@@ -31,8 +31,6 @@ export interface ReservationResult {
 }
 
 export interface SlotCounts {
-  early_bird_taken: number;
-  early_bird_total: number;
   regular_taken: number;
   total_taken: number;
   total_capacity: number;

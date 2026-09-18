@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const tier: TicketTier = body.tier;
 
-    if (!tier || !['early_bird', 'regular'].includes(tier)) {
+    if (!tier || tier !== 'regular') {
       return NextResponse.json(
         { success: false, message: 'Invalid pass tier selected' },
         { status: 400 }

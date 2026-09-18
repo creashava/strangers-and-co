@@ -15,7 +15,6 @@ interface UpiPaymentProps {
 export default function UpiPayment({ tier, amount, reservationId }: UpiPaymentProps) {
   const [copied, setCopied] = useState(false);
   const config = TIER_CONFIG[tier];
-  const isEarlyBird = tier === 'early_bird';
   const upiUri = buildUpiUri(amount, reservationId);
 
   const handleCopyUpiId = async () => {
@@ -34,7 +33,7 @@ export default function UpiPayment({ tier, amount, reservationId }: UpiPaymentPr
       <div className="text-center mb-5">
         <span
           className={`inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-2 ${
-            isEarlyBird ? 'bg-purple-100 text-purple-800' : 'bg-emerald-100 text-emerald-800'
+            'bg-emerald-100 text-emerald-800'
           }`}
         >
           {config.label}
@@ -80,15 +79,19 @@ export default function UpiPayment({ tier, amount, reservationId }: UpiPaymentPr
         </div>
       </div>
 
-      {/* Direct UPI App Trigger for Mobile Devices */}
+      {/* Manual Pay via UPI ID guidance (replaces blocked upi:// intent link) */}
       <div className="mt-3.5">
-        <a
-          href={upiUri}
-          className="w-full py-3.5 px-4 rounded-2xl bg-[#15803D] hover:bg-[#166534] text-white font-extrabold text-xs tracking-wide shadow-md shadow-emerald-900/15 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+        <button
+          type="button"
+          onClick={handleCopyUpiId}
+          className="w-full py-3.5 px-4 rounded-2xl bg-[#15803D] hover:bg-[#166534] text-white font-extrabold text-xs tracking-wide shadow-md shadow-emerald-900/15 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
           <Smartphone size={16} />
-          <span>Tap to Pay ₹{amount} Directly in UPI App</span>
-        </a>
+          <span>{copied ? 'UPI ID Copied! Open your UPI App →' : `Copy UPI ID & Pay ₹${amount} Manually`}</span>
+        </button>
+        <p className="text-[10px] text-stone-400 text-center mt-1.5 font-medium">
+          Open GPay / PhonePe → Send to UPI ID → Paste → Pay ₹{amount}
+        </p>
       </div>
 
       {/* UPI ID Quick Copy */}

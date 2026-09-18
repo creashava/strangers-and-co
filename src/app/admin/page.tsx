@@ -138,7 +138,6 @@ export default function AdminPage() {
   const inProgressLocks = data?.registrations.filter(r => r.status === 'reserved') || [];
 
   const totalRevenue = paidRegistrations.reduce((sum, r) => sum + Number(r.amount_paid), 0);
-  const earlyBirdVerified = paidRegistrations.filter(r => r.tier === 'early_bird').length;
   const verifiedCount = paidRegistrations.length;
 
   // Filter registrations based on active tab and search query
@@ -280,16 +279,7 @@ export default function AdminPage() {
             <p className="text-[10px] text-stone-400 mt-1 font-medium">From confirmed attendees</p>
           </div>
 
-          <div className="rounded-2xl border border-purple-200 bg-white p-4 shadow-xs">
-            <div className="flex items-center gap-1.5 mb-1.5 text-xs text-purple-800 font-bold uppercase tracking-wider">
-              <Zap size={14} />
-              <span>Festival Offer Paid</span>
-            </div>
-            <p className="text-2xl font-black text-purple-900">
-              {earlyBirdVerified} / 10
-            </p>
-            <p className="text-[10px] text-stone-400 mt-1 font-medium">₹99 passes confirmed</p>
-          </div>
+
 
           <div className="rounded-2xl border border-blue-200 bg-white p-4 shadow-xs">
             <div className="flex items-center gap-1.5 mb-1.5 text-xs text-blue-800 font-bold uppercase tracking-wider">
@@ -433,12 +423,8 @@ export default function AdminPage() {
                         <div className="text-stone-500">{reg.phone !== 'PENDING' ? reg.phone : '—'}</div>
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                          reg.tier === 'early_bird'
-                            ? 'bg-purple-100 text-purple-800'
-                            : 'bg-emerald-100 text-emerald-800'
-                        }`}>
-                          {reg.tier === 'early_bird' ? 'Festival' : 'General'}
+                        <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800">
+                          General
                         </span>
                       </td>
                       <td className="py-3.5 px-4 font-black text-stone-900">₹{reg.amount_paid}</td>
